@@ -1,0 +1,38 @@
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+.npm/
+
+# Python / FastAPI
+backend/venv/
+backend/env/
+backend/.venv/
+backend/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+backend/.pytest_cache/
+
+# Environment Variables
+.env
+.env.local
+*.env
+# (Note: .env.example should NOT be ignored so the reviewer can see the template)
+
+# ChromaDB local storage
+backend/chroma_db/
+chroma.sqlite3
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
