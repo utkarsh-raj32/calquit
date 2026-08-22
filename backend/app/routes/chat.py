@@ -123,9 +123,16 @@ async def chat_stream(
     if not request.messages:
         raise HTTPException(status_code=400, detail="Messages cannot be empty")
         
+    print(f"[CHAT] Received stream request from {user.username} ({user.role}) - {len(request.messages)} messages")
     lc_messages = convert_messages(request.messages)
     
     return StreamingResponse(
         stream_agent_events(lc_messages, user),
-        media_type="text/event-stream"
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+            "Content-Type": "text/event-stream; charset=utf-8",
+        }
     )
