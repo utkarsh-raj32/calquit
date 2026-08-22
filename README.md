@@ -2,6 +2,9 @@
 
 > **A production-ready, dual-context AI agent system built for logistics support, featuring RAG Source-Precedence, Human-in-the-Loop Action Confirmation, and Proactive Operations Insights.**
 
+🌐 **Live Demo Application**: [https://calquit.vercel.app/](https://calquit.vercel.app/)  
+⚡ **Backend API**: [https://calquity.onrender.com/docs](https://calquity.onrender.com/docs)
+
 Built with **FastAPI**, **LangGraph**, **Google Gemini**, **ChromaDB**, **Next.js 15**, and **Tailwind CSS**.
 
 ---
