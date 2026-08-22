@@ -25,12 +25,32 @@ type ToolIndicator = {
 };
 
 export default function ChatWindow({ context }: { context: "customer" | "internal" }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const storageKey = `parcelpilot_chat_${context}`;
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = sessionStorage.getItem(storageKey);
+      if (saved) {
+        const parsed: Message[] = JSON.parse(saved);
+        // Clear any stale streaming flags from a previous session
+        return parsed.map((m) => ({ ...m, isStreaming: false }));
+      }
+    } catch {}
+    return [];
+  });
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTools, setActiveTools] = useState<ToolIndicator[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Persist messages to sessionStorage on every change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(messages));
+    } catch {}
+  }, [messages, storageKey]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
