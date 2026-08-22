@@ -216,7 +216,7 @@ export default function ChatWindow({ context }: { context: "customer" | "interna
         
         {/* Active Progress Meter & Reasoning Pipeline */}
         {isGenerating && (
-          <div className="flex flex-col space-y-3 self-start mr-auto max-w-[90%] w-full bg-white border-2 border-black p-4">
+          <div className="flex flex-col space-y-3 self-start mr-auto max-w-[90%] w-full bg-white text-black border-2 border-black p-4">
             <div className="flex items-center justify-between border-b-2 border-black pb-2 text-xs font-bold uppercase tracking-wider">
               <span className="flex items-center space-x-2">
                 <span className="w-2.5 h-2.5 bg-black animate-ping" />
