@@ -123,7 +123,7 @@ async def chat_stream(
     if not request.messages:
         raise HTTPException(status_code=400, detail="Messages cannot be empty")
         
-    print(f"[CHAT] Received stream request from {user.username} ({user.role}) - {len(request.messages)} messages")
+    print(f"[CHAT] Received stream request from {user.name} ({user.role}) - {len(request.messages)} messages")
     lc_messages = convert_messages(request.messages)
     
     return StreamingResponse(
