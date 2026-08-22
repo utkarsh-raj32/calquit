@@ -166,22 +166,87 @@ export default function ChatWindow({ context }: { context: "customer" | "interna
           ))
         )}
         
-        {/* Tool Indicators */}
+        {/* Structured Execution & Search Progress Pipeline */}
         {activeTools.length > 0 && (
-          <div className="flex flex-col space-y-2 self-start mr-auto max-w-[85%]">
-            {activeTools.map((tool) => (
-              <div key={tool.id} className="flex items-center space-x-2 text-xs text-black bg-white px-3 py-2 rounded-none border-2 border-black">
-                {tool.status === "running" ? (
-                  <Loader2 className="w-3 h-3 animate-spin text-black" />
-                ) : (
-                  <div className="w-3 h-3 rounded-none bg-black" />
-                )}
-                <span className="font-mono">
-                  {tool.tool.replace(/_/g, " ")} 
-                  {tool.status === "running" ? "..." : " ✓"}
-                </span>
+          <div className="flex flex-col space-y-2 self-start mr-auto max-w-[90%] w-full bg-white border-2 border-black p-4">
+            <div className="flex items-center justify-between border-b-2 border-black pb-2 text-xs font-bold uppercase tracking-wider">
+              <span className="flex items-center space-x-2">
+                <span className="w-2.5 h-2.5 bg-black inline-block" />
+                <span>Agent Execution Pipeline</span>
+              </span>
+              <span className="font-mono">
+                {activeTools.filter((t) => t.status === "completed").length} / {activeTools.length} Completed
+              </span>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              {activeTools.map((tool, index) => {
+                const isRunning = tool.status === "running";
+                
+                // Formulate descriptive label based on tool input
+                let description = tool.tool.replace(/_/g, " ");
+                if (tool.tool === "document_search") {
+                  const q = tool.input?.query || "";
+                  description = q ? `Searching knowledge base for "${q}"` : "Searching knowledge base";
+                } else if (tool.tool === "get_order") {
+                  description = `Fetching order record: ${tool.input?.order_id || ""}`;
+                } else if (tool.tool === "get_ticket") {
+                  description = `Looking up ticket details: ${tool.input?.ticket_id || ""}`;
+                } else if (tool.tool === "calculate_cancellation_eligibility") {
+                  description = `Checking cancellation SOP & customer agreement overrides`;
+                } else if (tool.tool === "calculate_service_credit_eligibility") {
+                  description = `Calculating carrier delay thresholds & service credit`;
+                } else if (tool.tool === "check_sla_status") {
+                  description = `Auditing SLA targets and elapsed time calculation`;
+                } else if (tool.tool === "escalate_ticket") {
+                  description = `Triggering ticket escalation to engineering`;
+                }
+
+                return (
+                  <div 
+                    key={tool.id} 
+                    className={cn(
+                      "flex items-start justify-between p-2.5 border text-xs font-mono transition-all",
+                      isRunning ? "border-black bg-gray-100 font-bold" : "border-gray-300 bg-white text-gray-700"
+                    )}
+                  >
+                    <div className="flex items-start space-x-2.5">
+                      <span className="bg-black text-white px-1.5 py-0.5 text-[10px]">
+                        STEP {index + 1}
+                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-black">{description}</span>
+                        {tool.input && Object.keys(tool.input).length > 0 && !isRunning && (
+                          <span className="text-[11px] text-gray-500 font-mono mt-0.5">
+                            Target: {JSON.stringify(tool.input)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-1.5 pl-3">
+                      {isRunning ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
+                          <span className="text-black font-bold uppercase tracking-wider text-[11px]">Searching...</span>
+                        </>
+                      ) : (
+                        <span className="bg-black text-white px-2 py-0.5 text-[11px] font-bold">
+                          ✓ COMPLETED
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {isGenerating && activeTools.every((t) => t.status === "completed") && (
+              <div className="pt-2 border-t border-gray-200 flex items-center space-x-2 text-xs font-mono text-black">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />
+                <span>Synthesizing final response with verified source precedence...</span>
               </div>
-            ))}
+            )}
           </div>
         )}
         <div ref={messagesEndRef} />
