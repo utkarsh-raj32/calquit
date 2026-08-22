@@ -51,6 +51,9 @@ export default function ChatWindow({ context }: { context: "customer" | "interna
       role, content, name, tool_call_id
     }));
 
+    const assistantId = (Date.now() + 1).toString();
+    setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "", isStreaming: true }]);
+
     try {
       const response = await fetch(api.getChatStreamUrl(), {
         method: "POST",
@@ -58,15 +61,15 @@ export default function ChatWindow({ context }: { context: "customer" | "interna
         body: JSON.stringify({ messages: history }),
       });
 
-      if (!response.ok) throw new Error("Stream connection failed");
-      if (!response.body) throw new Error("No response body");
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "Stream connection failed");
+        throw new Error(errorText || `HTTP ${response.status}: Failed to connect to AI service`);
+      }
+      if (!response.body) throw new Error("No response body received from server");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
-      
-      const assistantId = (Date.now() + 1).toString();
-      setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: "", isStreaming: true }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -109,9 +112,13 @@ export default function ChatWindow({ context }: { context: "customer" | "interna
               }
               else if (data.type === "done" || data.type === "error") {
                  setMessages((prev) => prev.map((msg) => 
-                  msg.id === assistantId ? { ...msg, isStreaming: false } : msg
+                  msg.id === assistantId ? { 
+                    ...msg, 
+                    isStreaming: false,
+                    content: data.type === "error" ? `⚠️ ${data.content}` : msg.content 
+                  } : msg
                 ));
-                if(data.type === "error") {
+                if (data.type === "error") {
                    console.error("Stream error:", data.content);
                 }
               }
@@ -121,8 +128,15 @@ export default function ChatWindow({ context }: { context: "customer" | "interna
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat error:", error);
+      setMessages((prev) => prev.map((msg) => 
+        msg.id === assistantId ? { 
+          ...msg, 
+          isStreaming: false, 
+          content: `⚠️ Connection Error: ${error.message || "Unable to reach the AI backend service. Please check if the backend is live."}` 
+        } : msg
+      ));
     } finally {
       setIsGenerating(false);
     }

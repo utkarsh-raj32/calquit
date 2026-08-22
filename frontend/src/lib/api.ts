@@ -34,8 +34,25 @@ if (typeof window !== "undefined") {
 }
 
 export const auth = {
-  getToken: () => currentToken,
-  getUser: () => currentUser,
+  getToken: () => {
+    if (currentToken) return currentToken;
+    if (typeof window !== "undefined") {
+      currentToken = localStorage.getItem("pp_token");
+    }
+    return currentToken;
+  },
+  getUser: () => {
+    if (currentUser) return currentUser;
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("pp_user");
+      if (userStr) {
+        try {
+          currentUser = JSON.parse(userStr);
+        } catch (e) {}
+      }
+    }
+    return currentUser;
+  },
   
   login: async (username: string) => {
     const res = await fetch(`${API_BASE}/auth/login`, {
@@ -80,8 +97,9 @@ export const api = {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
-    if (currentToken) {
-      headers["Authorization"] = `Bearer ${currentToken}`;
+    const token = auth.getToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
     return headers;
   },
