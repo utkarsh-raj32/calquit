@@ -135,6 +135,15 @@ export const api = {
     return res.json();
   },
   
+  // Dashboard API
+  getDashboardInsights: async () => {
+    const res = await fetch(`${API_BASE}/dashboard/insights`, {
+      headers: api.getHeaders(),
+    });
+    if (!res.ok) throw new Error("Failed to fetch dashboard data");
+    return res.json();
+  },
+
   // Chat stream URL getter
   getChatStreamUrl: () => `${API_BASE}/chat/stream`,
 };

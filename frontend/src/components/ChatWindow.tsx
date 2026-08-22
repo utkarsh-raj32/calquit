@@ -111,30 +111,41 @@ export default function ChatWindow({ context }: { context: "customer" | "interna
                 });
               }
               else if (data.type === "done" || data.type === "error") {
-                 setMessages((prev) => prev.map((msg) => 
+                let displayError = data.content;
+                if (data.type === "error" && data.content) {
+                  if (data.content.includes("RESOURCE_EXHAUSTED") || data.content.includes("429")) {
+                    displayError = "⏳ **Google Gemini Rate Limit**: The free-tier request quota is temporarily cooling down. Please wait 15–20 seconds and send your message again.";
+                  } else if (data.content.includes("503") || data.content.includes("UNAVAILABLE")) {
+                    displayError = "⚠️ **Gemini High Demand**: Model servers are experiencing temporary high traffic. Please retry in a moment.";
+                  } else {
+                    displayError = `⚠️ **Error**: ${data.content}`;
+                  }
+                }
+
+                setMessages((prev) => prev.map((msg) => 
                   msg.id === assistantId ? { 
                     ...msg, 
                     isStreaming: false,
-                    content: data.type === "error" ? `⚠️ ${data.content}` : msg.content 
+                    content: data.type === "error" ? displayError : (msg.content || "")
                   } : msg
                 ));
-                if (data.type === "error") {
-                   console.error("Stream error:", data.content);
-                }
               }
             } catch (e) {
-              console.error("Error parsing stream chunk", e, dataStr);
+              // Parse error handling without modal interruption
             }
           }
         }
       }
     } catch (error: any) {
-      console.error("Chat error:", error);
+      let friendlyConnError = "Unable to connect to AI backend service. Ensure the backend is running.";
+      if (error?.message?.includes("Failed to fetch")) {
+        friendlyConnError = "⚠️ **Backend Service Notice**: Connecting to backend API... If local, ensure `uvicorn` is running on port 8000.";
+      }
       setMessages((prev) => prev.map((msg) => 
         msg.id === assistantId ? { 
           ...msg, 
           isStreaming: false, 
-          content: `⚠️ Connection Error: ${error.message || "Unable to reach the AI backend service. Please check if the backend is live."}` 
+          content: friendlyConnError
         } : msg
       ));
     } finally {

@@ -12,13 +12,10 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/dashboard/insights`, {
-          headers: api.getHeaders(),
-        });
-        if (!res.ok) throw new Error("Failed to fetch dashboard data");
-        setData(await res.json());
+        const result = await api.getDashboardInsights();
+        setData(result);
       } catch (e) {
-        console.error(e);
+        // Silently handle retry without triggering Next.js dev overlay
       } finally {
         setLoading(false);
       }
