@@ -7,7 +7,7 @@ import contextlib
 from app.config import FRONTEND_URL
 from app.data.structured import load_structured_data
 from app.data.vectorstore import load_and_index_documents
-from app.routes import auth, chat, actions
+from app.routes import auth, chat, actions, dashboard
 
 
 @contextlib.asynccontextmanager
@@ -45,6 +45,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(chat.router)
 app.include_router(actions.router)
+app.include_router(dashboard.router)
 
 
 @app.get("/health")
