@@ -20,7 +20,8 @@ backend/.pytest_cache/
 .env
 .env.local
 *.env
-# (Note: .env.example should NOT be ignored so the reviewer can see the template)
+!*.env.example
+!.env.example
 
 # ChromaDB local storage
 backend/chroma_db/
