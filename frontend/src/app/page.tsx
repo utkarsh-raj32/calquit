@@ -37,7 +37,9 @@ export default function LandingPage() {
     setLoginLoading(username);
     try {
       const user = await auth.login(username);
-      router.push(user.role === "customer" ? "/customer" : "/internal");
+      if (user) {
+        router.push(user.role === "customer" ? "/customer" : "/internal");
+      }
     } catch (e) {
       alert("Login failed. Ensure backend is running.");
       setLoginLoading(null);
