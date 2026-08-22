@@ -58,6 +58,10 @@ def agent_node(state: AgentState):
     # Determine the right system prompt based on user role
     sys_prompt = CUSTOMER_SYSTEM_PROMPT if user.role == UserRole.CUSTOMER else INTERNAL_SYSTEM_PROMPT
     
+    # Inject current reference time
+    from app.config import DATASET_SNAPSHOT
+    sys_prompt += f"\n\nCURRENT REFERENCE TIME (Assume this is 'now' for all time-based calculations): {DATASET_SNAPSHOT}"
+    
     # Ensure the first message is the system prompt
     if not messages or not isinstance(messages[0], SystemMessage):
         messages.insert(0, SystemMessage(content=sys_prompt))
