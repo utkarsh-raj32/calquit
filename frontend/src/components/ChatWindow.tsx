@@ -27,30 +27,33 @@ type ToolIndicator = {
 export default function ChatWindow({ context }: { context: "customer" | "internal" }) {
   const storageKey = `parcelpilot_chat_${context}`;
 
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (typeof window === "undefined") return [];
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTools, setActiveTools] = useState<ToolIndicator[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load messages from sessionStorage on mount (client-side only)
+  useEffect(() => {
     try {
       const saved = sessionStorage.getItem(storageKey);
       if (saved) {
         const parsed: Message[] = JSON.parse(saved);
-        // Clear any stale streaming flags from a previous session
-        return parsed.map((m) => ({ ...m, isStreaming: false }));
+        setMessages(parsed.map((m) => ({ ...m, isStreaming: false })));
       }
     } catch {}
-    return [];
-  });
-  const [input, setInput] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTools, setActiveTools] = useState<ToolIndicator[]>([]);
-  
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+    setHydrated(true);
+  }, [storageKey]);
 
-  // Persist messages to sessionStorage on every change
+  // Persist messages to sessionStorage on every change (only after initial hydration)
   useEffect(() => {
+    if (!hydrated) return;
     try {
       sessionStorage.setItem(storageKey, JSON.stringify(messages));
     } catch {}
-  }, [messages, storageKey]);
+  }, [messages, storageKey, hydrated]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
